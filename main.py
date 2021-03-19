@@ -8,54 +8,90 @@ from pytz import timezone
 
 emoji = {
     'partly_cloudy' : u'\U000026C5',
+    'mostly_sunny' : u'\U0001F324',
+    'full_cloudy' : u'\U00002601',
+    'thunderstorm' : u'\U0001F329',
+    'tornado' : u'\U0001F32A',
+    'rain' : u'\U0001F327',
+    'snow' : u'\U00002744',
+    'sunny' : u'\U00002600',
+    'fog' : u'\U0001F32B',
 }
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
+def get_weather(zip):
+    observation = owm.weather_manager().weather_at_place(zip)
+    data = observation.weather
+    return data
 
-est = timezone('US/Eastern')
+def assign_emoji(data):
+    if (data.status == 'Thunderstorm'):
+        return emoji['thunderstorm']
+    elif (data.status == 'Drizzle' or data.status == 'Rain'):
+        return emoji['rain']
+    elif (data.status == 'Snow'):
+        return emoji['snow']
+    elif (data.status == 'Clear'):
+        return emoji['sunny']
+    elif (data.status == 'Clouds'):
+        if (data.detailed_status == 'few clouds'):
+            return emoji['mostly_sunny']
+        elif (data.detailed_status == 'scattered clouds'):
+            return emoji['partly_cloudy']
+        else: #full cloudcover == broken clouds or overcast clouds
+            return emoji['full_cloudy']
+    elif (data.status == 'Fog'):
+        return emoji['fog']
+    elif (data.status == 'Tornado'):
+        return emoji['tornado']
+    else: #Sand, Dust, Ash, Squall, Mist, Haze
+        return emoji['fog']
+    
+def get_emoji(zip):
+    return assign_emoji(get_weather(zip))
 
-# Set credentials for Authentication
-consumer_key = credentials.env['consumer_key']
-consumer_secret = credentials.env['consumer_secret']
-access_token = credentials.env['access_token']
-access_token_secret = credentials.env['access_token_secret']
-owm_key = credentials.env['owm_key']
+if __name__ == '__main__':
 
-# Tweepy setup
-auth = tweepy.OAuthHandler(consumer_key,consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger()
 
-api = tweepy.API(auth)
+    est = timezone('US/Eastern')
 
-# OpenWeatherMaps setup
-owm = pyowm.OWM(owm_key)
-observation = owm.weather_manager().weather_at_place('48150')
-data = observation.weather
-print(data.status)
-print(data.temperature('fahrenheit'))
+    # Set credentials for Authentication
+    consumer_key = credentials.env['consumer_key']
+    consumer_secret = credentials.env['consumer_secret']
+    access_token = credentials.env['access_token']
+    access_token_secret = credentials.env['access_token_secret']
+    owm_key = credentials.env['owm_key']
 
-map = \
-'.   ' + emoji['partly_cloudy'] + '\n' +\
-'  ' + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + '\n' +\
-'   ' + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + '\n' +\
-\
-\
-'     ' + emoji['partly_cloudy'] + '\n' +\
-'                    ' + emoji['partly_cloudy'] + emoji['partly_cloudy'] + '\n' +\
-'              ' + ' ' + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + '\n' +\
-'              ' + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + '\n' +\
-'             ' + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + '  ' + emoji['partly_cloudy'] + '\n' +\
-'             ' + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + '\n' +\
-'              ' + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + '\n' +\
-'              ' + ' ' + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + '\n' +\
-'              ' + ' ' + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + '\n' +\
-'              ' + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + emoji['partly_cloudy'] + '\n'\
+    # Tweepy setup
+    auth = tweepy.OAuthHandler(consumer_key,consumer_secret)
+    auth.set_access_token(access_token, access_token_secret)
 
-print(map)
+    api = tweepy.API(auth)
 
-while True:
-    #new_tweet = emoji['partly_cloudy'] + str(datetime.now(est))
-    logger.info('Tweeting now...')
-    api.update_status(status=map)
-    sleep(900) # 15 minutes
+    # OpenWeatherMaps setup
+    owm = pyowm.OWM(owm_key)
+
+    map = \
+    '.   ' + emoji['sunny'] + '\n' +\
+    '  ' + emoji['sunny'] + emoji['sunny'] + emoji['sunny'] + emoji['sunny'] + emoji['sunny'] + '\n' +\
+    '   ' + emoji['sunny'] + emoji['sunny'] + emoji['sunny'] + emoji['sunny'] + emoji['sunny'] + emoji['sunny'] + '\n' +\
+    \
+    \
+    '     ' + emoji['snow'] + '\n' +\
+    '                    ' + emoji['snow'] + emoji['snow'] + '\n' +\
+    '              ' + ' ' + emoji['snow'] + emoji['snow'] + emoji['snow'] + emoji['snow'] + '\n' +\
+    '              ' + emoji['snow'] + emoji['snow'] + emoji['snow'] + emoji['snow'] + '\n' +\
+    '             ' + emoji['snow'] + emoji['snow'] + emoji['snow'] + emoji['snow'] + '  ' + emoji['snow'] + '\n' +\
+    '             ' + emoji['snow'] + emoji['snow'] + emoji['snow'] + emoji['snow'] + emoji['snow'] + emoji['snow'] + '\n' +\
+    '              ' + emoji['snow'] + emoji['snow'] + emoji['snow'] + emoji['snow'] + emoji['snow'] + emoji['snow'] + '\n' +\
+    '              ' + ' ' + emoji['snow'] + emoji['snow'] + emoji['snow'] + emoji['snow'] + emoji['snow'] + '\n' +\
+    '              ' + ' ' + emoji['snow'] + emoji['snow'] + emoji['snow'] + emoji['snow'] + emoji['snow'] + '\n' +\
+    '              ' + emoji['snow'] + emoji['snow'] + emoji['snow'] + emoji['snow'] + emoji['snow'] + '\n'\
+
+    print(map)
+
+    while True:
+        logger.info('Tweeting now...')
+        api.update_status(status=map)
+        sleep(900) # 15 minutes
