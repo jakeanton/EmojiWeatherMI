@@ -36,8 +36,11 @@ emoji = {
 }
 
 def get_weather(zip_code):
+    """ Returns the weather info for the supplied ZIP code """
+    country = 'us'
+
     try:
-        observation = owm.weather_manager().weather_at_place(zip_code)
+        observation = owm.weather_manager().weather_at_zip_code(zip_code, country)
         data = observation.weather
         return data
 
@@ -46,6 +49,7 @@ def get_weather(zip_code):
 
 
 def assign_emoji(data):
+    """ Takes in weather data, returns the emoji representing the current weather conditions """
     if (data.status == 'Thunderstorm'):
         return emoji['thunderstorm']
     elif (data.status == 'Drizzle' or data.status == 'Rain'):
@@ -57,9 +61,10 @@ def assign_emoji(data):
     elif (data.status == 'Clouds'):
         if (data.detailed_status == 'few clouds'):
             return emoji['mostly_sunny']
-        elif (data.detailed_status == 'scattered clouds'):
+        elif ((data.detailed_status == 'scattered clouds') or
+              (data.detailed_status == 'broken clouds')):
             return emoji['partly_cloudy']
-        else: #full cloudcover == broken clouds or overcast clouds
+        else: # full cloudcover == overcast clouds
             return emoji['full_cloudy']
     elif (data.status == 'Fog'):
         return emoji['fog']
@@ -69,8 +74,8 @@ def assign_emoji(data):
         return emoji['fog']
 
 
-# Takes in list of 55 emoji (mapped to each ZIP code), return Michigan
 def get_map(in_list):
+    """ Takes in list of 55 emoji (mapped to each ZIP code), return Michigan """
     map = \
     '.   ' + in_list[0] + '\n' +\
     '  ' + in_list[1] + in_list[2] + in_list[3] + in_list[4] + in_list[5] + '\n' +\
