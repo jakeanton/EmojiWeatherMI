@@ -1,2 +1,6 @@
 credentials.py
 /venv/*
+*.pem
+*.tar
+*.gz
+*.com

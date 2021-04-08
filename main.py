@@ -127,4 +127,4 @@ if __name__ == '__main__':
     while True:
         logger.info('Tweeting now...')
         api.update_status(status=map)
-        sleep(900) # 15 minutes
+        sleep(21600) # 6 hours
