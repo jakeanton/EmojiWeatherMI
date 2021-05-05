@@ -3,7 +3,7 @@ import credentials
 import logging
 import pyowm
 from time import sleep
-from datetime import datetime, timezone
+from datetime import datetime, time
 from pytz import timezone
 
 zip_codes =  \
@@ -33,6 +33,17 @@ emoji = {
     'snow' : u'\U00002744',
     'sunny' : u'\U00002600',
     'fog' : u'\U0001F32B',
+}
+
+moon_emoji = {
+    'new moon' : u'\U0001F311',
+    'waxing crescent moon' : u'\U0001F312',
+    'first quarter moon' : u'\U0001F313',
+    'waxing gibbous moon' : u'\U0001F314',
+    'full moon' : u'\U0001F315',
+    'waning gibbous moon' : u'\U0001F316',
+    'last quarter moon' : u'\U0001F317',
+    'waning crescent moon' : u'\U0001F318',
 }
 
 def get_weather(zip_code):
@@ -94,12 +105,38 @@ def get_map(in_list):
     '              ' + in_list[50] + in_list[51] + in_list[52] + in_list[53] + in_list[54] + '\n'
     return map
 
+
+def is_it_daytime(data):
+    """ Takes in weather data, returns True if it is daytime and False otherwise """
+    est = timezone('US/Eastern')
+    current_time = datetime.now(tz=est).time()
+    sunrise = data.sunrise_time(timeformat='date').astimezone(tz=est).time()
+    sunset = data.sunset_time(timeformat='date').astimezone(tz=est).time()
+
+    return is_time_between(sunrise, sunset, current_time)
+
+
+def is_time_between(begin_time, end_time, check_time):
+    return check_time >= begin_time and check_time <= end_time
+
+
+def is_time_to_tweet():
+    est = timezone('US/Eastern')
+    current_time = datetime.now(tz=est).time()
+
+    if is_time_between(time(8,00),time(8,5), current_time) or \
+       is_time_between(time(12,00),time(12,5), current_time) or \
+       is_time_between(time(16,00),time(16,5), current_time) or \
+       is_time_between(time(20,00),time(20,5), current_time):
+        return True
+    else:
+        return False
+
+
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger()
-
-    est = timezone('US/Eastern')
 
     # Set credentials for Authentication
     consumer_key = credentials.env['consumer_key']
@@ -126,5 +163,8 @@ if __name__ == '__main__':
 
     while True:
         logger.info('Tweeting now...')
-        api.update_status(status=map)
-        sleep(21600) # 6 hours
+        if is_time_to_tweet():
+            api.update_status(status=map)
+            sleep(12600) # 3.5 hours
+        else:
+            sleep(60) # 1 minutes
