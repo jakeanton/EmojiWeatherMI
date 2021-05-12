@@ -154,16 +154,17 @@ if __name__ == '__main__':
     # OpenWeatherMaps setup
     owm = pyowm.OWM(owm_key)
 
-    emoji_list = []
-    for zip_code in zip_codes:
-        emoji_list.append(assign_emoji(get_weather(zip_code)))
-
-    map = get_map(emoji_list)
-    print(map)
 
     while True:
         logger.info('Tweeting now...')
         if is_time_to_tweet():
+
+            emoji_list = []
+            for zip_code in zip_codes:
+                emoji_list.append(assign_emoji(get_weather(zip_code)))
+
+            map = get_map(emoji_list)
+
             api.update_status(status=map)
             sleep(12600) # 3.5 hours
         else:
